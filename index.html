@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Notion-Style Task Manager</title>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+            <button class="ai-toggle" id="aiToggle">🤖</button>
+            <h1>📝 Notion-Style Task Manager</h1>
+            <p>Organize your tasks with database-like functionality</p>
+        </header>
+
+        <!-- AI Assistant Panel -->
+        <div class="ai-panel" id="aiPanel">
+            <div class="ai-header">
+                <h3>🤖 AI Assistant</h3>
+                <button class="ai-close" id="aiClose">✕</button>
+            </div>
+            <div class="ai-content" id="aiContent">
+                <div class="ai-suggestion">
+                    <h4>💡 Smart Task Suggestions</h4>
+                    <p>Based on your current tasks, I can help you create better task titles, set appropriate due dates,
+                        and suggest relevant tags.</p>
+                    <div class="ai-actions">
+                        <button class="ai-btn" onclick="taskManager.aiSuggestTasks()">Suggest Tasks</button>
+                        <button class="ai-btn ai-btn-outline" onclick="taskManager.aiOptimizeCurrent()">Optimize
+                            Current</button>
+                    </div>
+                </div>
+
+                <div class="ai-suggestion">
+                    <h4>📊 Productivity Insights</h4>
+                    <p>Get insights about your task completion patterns, most productive times, and suggestions for
+                        improvement.</p>
+                    <div class="ai-actions">
+                        <button class="ai-btn" onclick="taskManager.aiShowInsights()">Show Insights</button>
+                    </div>
+                </div>
+
+                <div class="ai-suggestion">
+                    <h4>🔍 Smart Search & Filtering</h4>
+                    <p>Use natural language to find tasks. Try "show me overdue high priority work tasks" or "what's due
+                        this week?"</p>
+                    <div class="ai-actions">
+                        <button class="ai-btn" onclick="taskManager.aiEnableSmartSearch()">Enable Smart Search</button>
+                    </div>
+                </div>
+
+                <div class="ai-suggestion">
+                    <h4>⏰ Due Date Assistant</h4>
+                    <p>I can help parse natural language due dates like "next Monday", "in 2 days", or "end of month".
+                    </p>
+                    <div class="ai-actions">
+                        <button class="ai-btn" onclick="taskManager.aiShowDateExamples()">See Examples</button>
+                    </div>
+                </div>
+
+                <div id="aiDynamicSuggestions">
+                    <!-- Dynamic suggestions will appear here -->
+                </div>
+            </div>
+            <div class="ai-input-section">
+                <textarea class="ai-input" id="aiInput"
+                    placeholder="Ask me anything about your tasks... (e.g., 'What should I work on today?', 'Help me prioritize my tasks')"></textarea>
+                <button class="ai-send-btn" onclick="taskManager.aiProcessQuery()">Send to AI</button>
+            </div>
+        </div>
+
+        <!-- Rest of your HTML remains exactly the same -->
+        <div class="controls">
+            <button id="addTaskBtn" class="btn-primary">
+                <span>+</span> Add New Task
+            </button>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="table">Table</button>
+                <button class="view-btn" data-view="board">Board</button>
+                <button class="view-btn" data-view="list">List</button>
+                <button class="view-btn" data-view="calendar">Calendar</button>
+            </div>
+        </div>
+
+        <div class="controls-top">
+            <div class="search-filters">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search tasks...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="Todo">Todo</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Done">Done</option>
+                </select>
+                <select class="filter-select" id="priorityFilter">
+                    <option value="">All Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="saved-searches">
+                <div class="search-chip active" data-filter="all">All Tasks</div>
+                <div class="search-chip" data-filter="today">Today</div>
+                <div class="search-chip" data-filter="overdue">Overdue</div>
+                <div class="search-chip" data-filter="high-priority">High Priority</div>
+            </div>
+        </div>
+
+        <div class="bulk-actions" id="bulkActions">
+            <span class="selected-count" id="selectedCount">0 tasks selected</span>
+            <button class="btn-primary btn-sm" id="bulkComplete">Complete</button>
+            <button class="btn-primary btn-sm" id="bulkDelete">Delete</button>
+            <button class="btn-primary btn-sm" id="bulkMove">Move To</button>
+            <button class="btn-sm" id="bulkClear"
+                style="background: transparent; color: var(--text-muted);">Clear</button>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div id="taskModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeTaskModal">&times;</span>
+                <h3 id="modalTitle">Add New Task</h3>
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="form-group ai-smart-input">
+                        <label for="taskTitle">Task Title <span class="ai-badge">AI</span></label>
+                        <input type="text" id="taskTitle" placeholder="Enter task title (AI will suggest improvements)"
+                            required>
+                        <div class="ai-suggestions-dropdown" id="titleSuggestions"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" placeholder="Enter task description"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskStatus">Status</label>
+                            <select id="taskStatus">
+                                <option value="Todo">Todo</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskProject">Project</label>
+                            <select id="taskProject">
+                                <option value="Personal">Personal</option>
+                                <option value="Work">Work</option>
+                                <option value="Family">Family</option>
+                                <option value="Health">Health</option>
+                                <option value="Education">Education</option>
+                            </select>
+                        </div>
+                        <div class="form-group ai-smart-input">
+                            <label for="taskDueDate">Due Date <span class="ai-badge">AI</span></label>
+                            <input type="text" id="taskDueDate" placeholder="e.g., tomorrow, next Monday, in 3 days">
+                            <div class="ai-suggestions-dropdown" id="dateSuggestions"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskTags">Tags (comma separated)</label>
+                        <input type="text" id="taskTags" placeholder="e.g., urgent, important, backend">
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span id="submitBtnText">Add Task</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Task Detail Modal -->
+        <div id="taskDetailModal" class="modal">
+            <div class="modal-content task-detail-modal">
+                <span class="close" id="closeDetailModal">&times;</span>
+                <div id="taskDetailContent">
+                    <!-- Task details will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="tableView" class="view active">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="30"><input type="checkbox" id="selectAll"></th>
+                            <th>Task</th>
+                            <th>Priority</th>
+                            <th>Due Date</th>
+                            <th>Project</th>
+                            <th>Status</th>
+                            <th>Tags</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody">
+                        <!-- Tasks will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="tableEmptyState" class="empty-state" style="display: none;">
+                    <h3>No tasks yet</h3>
+                    <p>Click "Add New Task" to create your first task</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board View -->
+        <div id="boardView" class="view">
+            <div class="board-columns">
+                <div class="column column-Todo">
+                    <h3>Todo <span class="column-count" id="todoCount">0</span></h3>
+                    <div class="tasks-container" data-status="Todo" id="todoContainer">
+                        <!-- Todo tasks will be inserted here -->
+                    </div>
+                </div>
+                <div class="column column-In-Progress">
+                    <h3>In Progress <span class="column-count" id="inProgressCount">0</span></h3>
+                    <div class="tasks-container" data-status="In Progress" id="inProgressContainer">
+                        <!-- In Progress tasks will be inserted here -->
+                    </div>
+                </div>
+                <div class="column column-Done">
+                    <h3>Done <span class="column-count" id="doneCount">0</span></h3>
+                    <div class="tasks-container" data-status="Done" id="doneContainer">
+                        <!-- Done tasks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            <div id="boardEmptyState" class="empty-state" style="display: none;">
+                <h3>No tasks yet</h3>
+                <p>Click "Add New Task" to create your first task</p>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="listView" class="view">
+            <div class="list-container" id="listContainer">
+                <!-- Tasks will be inserted here by JavaScript -->
+            </div>
+            <div id="listEmptyState" class="empty-state" style="display: none;">
+                <h3>No tasks yet</h3>
+                <p>Click "Add New Task" to create your first task</p>
+            </div>
+        </div>
+
+        <!-- Calendar View -->
+        <div id="calendarView" class="view">
+            <div class="calendar-view">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button id="prevMonth">←</button>
+                        <h3 id="currentMonth">January 2024</h3>
+                        <button id="nextMonth">→</button>
+                    </div>
+                    <button class="btn-primary btn-sm" id="todayBtn">Today</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Reset Button -->
+        <div class="controls-bottom">
+            <button id="resetDatabaseBtn" class="btn-danger">
+                <span>🔄</span> Reset Database
+            </button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
