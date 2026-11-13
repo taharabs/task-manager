@@ -771,6 +771,7 @@ header p {
 
 .calendar-task.priority-High {
     background: var(--danger-color);
+    color: #fff;
 }
 
 .calendar-task.priority-Medium {
@@ -780,6 +781,7 @@ header p {
 
 .calendar-task.priority-Low {
     background: var(--success-color);
+    color: #fff;
 }
 
 /* Table View */
