@@ -10,6 +10,8 @@
 
 </div>
 
+![Board view](docs/board.jpg)
+
 ---
 
 ## ✨ Features
@@ -52,7 +54,14 @@ npx serve .        # or simply open index.html in your browser
 - [ ] Optional LLM mode for the assistant
 
 ## 📸 Screenshots
-<!-- Add screenshots to docs/ and reference them here, e.g. ![Board view](docs/board.png) -->
+
+| Board | Table |
+|---|---|
+| ![Board view: Todo, In Progress and Done columns](docs/board.jpg) | ![Table view with priority, project, status and due date](docs/table.jpg) |
+| **List** | **Calendar** |
+| ![List view](docs/list.jpg) | ![Calendar view with tasks colored by priority](docs/calendar.jpg) |
+
+![Assistant panel with task suggestions, insights, smart search and due-date help](docs/assistant.jpg)
 
 ---
 
